@@ -1,44 +1,25 @@
 server:
-  port: 8082
+  port: ${SERVER_PORT:8082}
 
 spring:
   application:
     name: appointment-service
-  
-  # MySQL 데이터베이스 설정
   datasource:
-    url: jdbc:mysql://localhost:3306/appointment_service?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/appointment_db?serverTimezone=UTC&useSSL=false}
+    username: ${SPRING_DATASOURCE_USERNAME:appointment-service_user}
+    password: ${SPRING_DATASOURCE_PASSWORD:Password@}
     driver-class-name: com.mysql.cj.jdbc.Driver
-    username: appointment_user
-    password: appointment_password
-  
-  # JPA 설정
   jpa:
     hibernate:
-      ddl-auto: update       # 테이블 구조 자동 업데이트 (운영에서는 validate 권장)
-    show-sql: true           # SQL 쿼리 로그 출력
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
+    open-in-view: false
     properties:
       hibernate:
-        format_sql: true     # SQL 포맷팅
-        dialect: org.hibernate.dialect.MySQLDialect
-        # MySQL 8.0 최적화 설정
-        jdbc:
-          time_zone: Asia/Seoul
-  
-  # Jackson JSON 설정
-  jackson:
-    serialization:
-      write-dates-as-timestamps: false
-    deserialization:
-      fail-on-unknown-properties: false
-    time-zone: Asia/Seoul
-    date-format: yyyy-MM-dd'T'HH:mm:ss
-
-# 로깅 설정
-logging:
-  level:
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQL8Dialect
+  sql: 
+    init:
+      mode: never
 
 management:
   endpoints:
