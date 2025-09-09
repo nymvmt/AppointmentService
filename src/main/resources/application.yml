@@ -4,11 +4,44 @@ server:
 spring:
   application:
     name: appointment-service
-  # 데이터베이스 설정 비활성화 (테스트용)
-  autoconfigure:
-    exclude:
-      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
-      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+  
+  # H2 인메모리 데이터베이스 설정
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  
+  # JPA 설정
+  jpa:
+    hibernate:
+      ddl-auto: create-drop  # 앱 시작시 테이블 생성, 종료시 삭제
+    show-sql: true           # SQL 쿼리 로그 출력
+    properties:
+      hibernate:
+        format_sql: true     # SQL 포맷팅
+        dialect: org.hibernate.dialect.H2Dialect
+  
+  # Jackson JSON 설정
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+    time-zone: Asia/Seoul
+    date-format: yyyy-MM-dd'T'HH:mm:ss
+  
+  # H2 콘솔 활성화 (개발/테스트용)
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+# 로깅 설정
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
 
 management:
   endpoints:
