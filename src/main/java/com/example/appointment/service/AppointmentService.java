@@ -350,6 +350,10 @@ public class AppointmentService {
         responseDto.setLocationId(appointment.getLocationId());
         responseDto.setAppointmentStatus(appointment.getAppointmentStatus());
         
+        // 감사 정보 추가
+        responseDto.setCreatedAt(appointment.getCreatedAt());
+        responseDto.setUpdatedAt(appointment.getUpdatedAt());
+        
         return responseDto;
     }
 }

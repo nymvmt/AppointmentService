@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  # MySQL 데이터베이스 서비스
+  mysql:
+    image: mysql:8.0
+    container_name: appointment-mysql
+    restart: unless-stopped
+    environment:
+      # 데이터베이스 설정
+      MYSQL_DATABASE: appointment_service
+      MYSQL_USER: appointment_user
+      MYSQL_PASSWORD: appointment_password
+      MYSQL_ROOT_PASSWORD: root_password
+      # MySQL 8.0 설정
+      MYSQL_CHARSET: utf8mb4
+      MYSQL_COLLATION: utf8mb4_unicode_ci
+    ports:
+      - "3306:3306"
+    volumes:
+      # 데이터 영속성을 위한 볼륨 마운트
+      - mysql_data:/var/lib/mysql
+      # MySQL 설정 파일 (선택사항)
+      - ./mysql/conf.d:/etc/mysql/conf.d
+      # 초기화 스크립트 (선택사항)
+      - ./mysql/init:/docker-entrypoint-initdb.d
+    networks:
+      - appointment-network
+    command: 
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-time-zone=+09:00
+
+  # Appointment Service 애플리케이션 (개발용)
+  appointment-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: appointment-service
+    restart: unless-stopped
+    ports:
+      - "8082:8082"
+    environment:
+      # 데이터베이스 연결 정보
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/appointment_service?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
+      SPRING_DATASOURCE_USERNAME: appointment_user
+      SPRING_DATASOURCE_PASSWORD: appointment_password
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    depends_on:
+      - mysql
+    networks:
+      - appointment-network
+
+# 데이터 영속성을 위한 볼륨
+volumes:
+  mysql_data:
+    driver: local
+
+# 서비스 간 통신을 위한 네트워크
+networks:
+  appointment-network:
+    driver: bridge
