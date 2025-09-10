@@ -9,7 +9,7 @@ collation-server = utf8mb4_unicode_ci
 init-connect = 'SET NAMES utf8mb4'
 
 # 타임존 설정
-default-time-zone = '+09:00'
+default-time-zone = '+00:00'
 
 # 성능 최적화 (개발환경용)
 innodb_buffer_pool_size = 256M

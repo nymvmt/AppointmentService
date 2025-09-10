@@ -54,4 +54,8 @@ public interface AppointmentRepository extends JpaRepository<Appointment, String
             @Param("startTime") LocalDateTime startTime,
             @Param("endTime") LocalDateTime endTime
     );
+    
+    // 다음 시퀀스 번호 조회 (appo001 형태 생성용)
+    @Query("SELECT COUNT(a) + 1 FROM Appointment a")
+    Long getNextSequenceNumber();
 }

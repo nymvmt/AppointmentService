@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -324,7 +323,10 @@ public class AppointmentService {
      */
     private Appointment createAppointmentEntity(AppointmentRequestDto requestDto) {
         Appointment appointment = new Appointment();
-        appointment.setAppointmentId(UUID.randomUUID().toString());
+        // appo001 형태로 ID 생성
+        Long sequenceNumber = appointmentRepository.getNextSequenceNumber();
+        String appointmentId = String.format("appo%03d", sequenceNumber);
+        appointment.setAppointmentId(appointmentId);
         appointment.setHostId(requestDto.getHostId());
         appointment.setTitle(requestDto.getTitle());
         appointment.setDescription(requestDto.getDescription());
@@ -349,10 +351,6 @@ public class AppointmentService {
         responseDto.setEndTime(appointment.getEndTime());
         responseDto.setLocationId(appointment.getLocationId());
         responseDto.setAppointmentStatus(appointment.getAppointmentStatus());
-        
-        // 감사 정보 추가
-        responseDto.setCreatedAt(appointment.getCreatedAt());
-        responseDto.setUpdatedAt(appointment.getUpdatedAt());
         
         return responseDto;
     }

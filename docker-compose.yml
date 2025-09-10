@@ -8,9 +8,9 @@ services:
     restart: unless-stopped
     environment:
       # 데이터베이스 설정
-      MYSQL_DATABASE: appointment_service
-      MYSQL_USER: appointment_user
-      MYSQL_PASSWORD: appointment_password
+      MYSQL_DATABASE: appointment_db
+      MYSQL_USER: appointment-service_user
+      MYSQL_PASSWORD: Password@
       MYSQL_ROOT_PASSWORD: root_password
       # MySQL 8.0 설정
       MYSQL_CHARSET: utf8mb4
@@ -29,7 +29,7 @@ services:
     command: 
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci
-      - --default-time-zone=+09:00
+      - --default-time-zone=+00:00
 
   # Appointment Service 애플리케이션 (개발용)
   appointment-service:
@@ -42,9 +42,10 @@ services:
       - "8082:8082"
     environment:
       # 데이터베이스 연결 정보
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/appointment_service?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
-      SPRING_DATASOURCE_USERNAME: appointment_user
-      SPRING_DATASOURCE_PASSWORD: appointment_password
+      SERVER_PORT: 8082
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/appointment_db?serverTimezone=UTC&useSSL=false
+      SPRING_DATASOURCE_USERNAME: appointment-service_user
+      SPRING_DATASOURCE_PASSWORD: Password@
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
     depends_on:
       - mysql

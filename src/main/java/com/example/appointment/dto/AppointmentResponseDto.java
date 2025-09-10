@@ -23,8 +23,4 @@ public class AppointmentResponseDto {
     private LocalDateTime endTime;
     private String locationId;
     private Appointment.AppointmentStatus appointmentStatus;
-    
-    // 감사 정보 추가
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 }

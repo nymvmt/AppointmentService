@@ -4,8 +4,6 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -53,14 +51,6 @@ public class Appointment {
     @Column(name = "appointment_status", length = 20, nullable = false, columnDefinition = "VARCHAR(20) DEFAULT 'PLANNED'")
     private AppointmentStatus appointmentStatus;
     
-    // 감사(Audit) 필드 추가
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6)")
-    private LocalDateTime createdAt;
-    
-    @UpdateTimestamp
-    @Column(name = "updated_at", nullable = false, columnDefinition = "DATETIME(6) DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6)")
-    private LocalDateTime updatedAt;
     
     /**
      * 약속 상태 열거형

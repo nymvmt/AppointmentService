@@ -1,10 +1,10 @@
 -- Appointment Service 데이터베이스 초기화 스크립트
 
 -- 데이터베이스가 존재하지 않으면 생성 (docker-compose에서 자동 생성되므로 생략 가능)
--- CREATE DATABASE IF NOT EXISTS appointment_service CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+-- CREATE DATABASE IF NOT EXISTS appointment_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
--- appointment_service 데이터베이스 사용
-USE appointment_service;
+-- appointment_db 데이터베이스 사용
+USE appointment_db;
 
 -- appointment 테이블 생성 (JPA가 자동 생성하므로 선택사항)
 -- 하지만 명시적으로 스키마를 정의하고 싶다면 아래 주석 해제
@@ -35,5 +35,5 @@ CREATE TABLE IF NOT EXISTS appointment (
 --     ('test-appointment-001', 'user001', '테스트 약속', '초기 테스트용 약속입니다', '2025-12-31 14:00:00', '2025-12-31 15:00:00', 'room001', 'PLANNED');
 
 -- 사용자 권한 설정 (이미 docker-compose에서 설정됨)
--- GRANT ALL PRIVILEGES ON appointment_service.* TO 'appointment_user'@'%';
+-- GRANT ALL PRIVILEGES ON appointment_db.* TO 'appointment-service_user'@'%';
 -- FLUSH PRIVILEGES;
