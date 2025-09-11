@@ -5,6 +5,7 @@ import com.example.appointment.dto.UserResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -34,7 +35,7 @@ public class UserServiceClient {
                 .get()
                 .uri("/users/{userId}", userId)
                 .retrieve()
-                .bodyToMono(ApiResponse.class)
+                .bodyToMono(new ParameterizedTypeReference<ApiResponse<UserResponse>>() {})
                 .block();
         
         UserResponse userResponse = apiResponse.getData();
