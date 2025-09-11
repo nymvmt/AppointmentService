@@ -58,4 +58,25 @@ public interface AppointmentRepository extends JpaRepository<Appointment, String
     // 다음 시퀀스 번호 조회 (appo001 형태 생성용)
     @Query("SELECT COUNT(a) + 1 FROM Appointment a")
     Long getNextSequenceNumber();
+    
+    // 실시간 상태 변경을 위한 메서드들
+    
+    // 시작 시간이 된 PLANNED 약속들 조회
+    @Query("SELECT a FROM Appointment a WHERE " +
+           "a.appointmentStatus = 'PLANNED' AND " +
+           "a.startTime <= :currentTime AND " +
+           "a.endTime > :currentTime")
+    List<Appointment> findAppointmentsToStartNow(@Param("currentTime") LocalDateTime currentTime);
+    
+    // 종료 시간이 된 ONGOING 약속들 조회  
+    @Query("SELECT a FROM Appointment a WHERE " +
+           "a.appointmentStatus = 'ONGOING' AND " +
+           "a.endTime <= :currentTime")
+    List<Appointment> findAppointmentsToEndNow(@Param("currentTime") LocalDateTime currentTime);
+    
+    // PLANNED 상태에서 시작 시간이 지난 약속들 (늦은 시작)
+    @Query("SELECT a FROM Appointment a WHERE " +
+           "a.appointmentStatus = 'PLANNED' AND " +
+           "a.endTime <= :currentTime")
+    List<Appointment> findPlannedAppointmentsPastEndTime(@Param("currentTime") LocalDateTime currentTime);
 }

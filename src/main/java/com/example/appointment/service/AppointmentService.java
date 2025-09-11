@@ -51,8 +51,7 @@ public class AppointmentService {
         
         List<Appointment> appointments = appointmentRepository.findAll();
         
-        // 상태 자동 업데이트
-        updateAppointmentStatuses(appointments);
+        // 실시간 스케줄러가 처리하므로 lazy update 제거
         
         return appointments.stream()
                 .map(this::convertToResponseDto)
@@ -71,8 +70,7 @@ public class AppointmentService {
         
         Appointment appointment = appointmentOpt.get();
         
-        // 상태 자동 업데이트
-        updateAppointmentStatus(appointment);
+        // 실시간 스케줄러가 처리하므로 lazy update 제거
         
         return convertToResponseDto(appointment);
     }
@@ -145,8 +143,7 @@ public class AppointmentService {
         
         Appointment appointment = appointmentOpt.get();
         
-        // 상태 자동 업데이트
-        updateAppointmentStatus(appointment);
+        // 실시간 스케줄러가 처리하므로 lazy update 제거
         
         return appointment.getAppointmentStatus();
     }
