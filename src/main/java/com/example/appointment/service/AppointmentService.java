@@ -1,8 +1,10 @@
 package com.example.appointment.service;
 
+import com.example.appointment.client.UserServiceClient;
 import com.example.appointment.dto.AppointmentRequestDto;
 import com.example.appointment.dto.AppointmentResponseDto;
 import com.example.appointment.dto.AppointmentStatusUpdateDto;
+import com.example.appointment.dto.UserResponse;
 import com.example.appointment.entity.Appointment;
 import com.example.appointment.repository.AppointmentRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,9 +27,13 @@ import java.util.stream.Collectors;
 public class AppointmentService {
     
     private final AppointmentRepository appointmentRepository;
+    private final UserServiceClient userServiceClient;
     
     public AppointmentResponseDto createAppointment(AppointmentRequestDto requestDto) {
         log.info("Creating appointment for host: {}", requestDto.getHostId());
+        
+        // 호스트 유효성 검증
+        validateHostExists(requestDto.getHostId());
         
         // 불변식 검증
         validateAppointmentInvariants(requestDto);
@@ -207,6 +213,22 @@ public class AppointmentService {
     }
     
     /**
+     * 호스트 존재 여부 검증
+     */
+    private void validateHostExists(String hostId) {
+        try {
+            UserResponse user = userServiceClient.getUserById(hostId);
+            if (user == null) {
+                throw new IllegalArgumentException("Host user not found: " + hostId);
+            }
+            log.info("Host validation successful: {}", user.getUsername());
+        } catch (Exception e) {
+            log.error("Host validation failed for ID: {}", hostId, e);
+            throw new IllegalArgumentException("Invalid host ID: " + hostId);
+        }
+    }
+    
+    /**
      * 약속 불변식 검증
      */
     private void validateAppointmentInvariants(AppointmentRequestDto requestDto) {
@@ -342,6 +364,18 @@ public class AppointmentService {
         AppointmentResponseDto responseDto = new AppointmentResponseDto();
         responseDto.setAppointmentId(appointment.getAppointmentId());
         responseDto.setHostId(appointment.getHostId());
+        
+        // 호스트 정보 조회
+        try {
+            UserResponse host = userServiceClient.getUserById(appointment.getHostId());
+            responseDto.setHostUsername(host.getUsername());
+            responseDto.setHostNickname(host.getNickname());
+        } catch (Exception e) {
+            log.warn("Failed to fetch host info for appointment: {}", appointment.getAppointmentId());
+            responseDto.setHostUsername("Unknown");
+            responseDto.setHostNickname("Unknown");
+        }
+        
         responseDto.setTitle(appointment.getTitle());
         responseDto.setDescription(appointment.getDescription());
         responseDto.setStartTime(appointment.getStartTime());

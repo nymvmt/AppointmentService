@@ -17,6 +17,8 @@ public class AppointmentResponseDto {
     
     private String appointmentId;
     private String hostId;
+    private String hostUsername;
+    private String hostNickname;
     private String title;
     private String description;
     private LocalDateTime startTime;
