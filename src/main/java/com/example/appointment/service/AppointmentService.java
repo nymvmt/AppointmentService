@@ -1,9 +1,13 @@
 package com.example.appointment.service;
 
+import com.example.appointment.client.GuestServiceClient;
 import com.example.appointment.client.UserServiceClient;
 import com.example.appointment.dto.AppointmentRequestDto;
 import com.example.appointment.dto.AppointmentResponseDto;
+import com.example.appointment.dto.AppointmentStatusFeedbackDto;
 import com.example.appointment.dto.AppointmentStatusUpdateDto;
+import com.example.appointment.dto.GuestInfo;
+import com.example.appointment.dto.GuestResponse;
 import com.example.appointment.dto.UserResponse;
 import com.example.appointment.entity.Appointment;
 import com.example.appointment.repository.AppointmentRepository;
@@ -28,6 +32,7 @@ public class AppointmentService {
     
     private final AppointmentRepository appointmentRepository;
     private final UserServiceClient userServiceClient;
+    private final GuestServiceClient guestServiceClient;
     
     public AppointmentResponseDto createAppointment(AppointmentRequestDto requestDto) {
         log.info("Creating appointment for host: {}", requestDto.getHostId());
@@ -358,6 +363,7 @@ public class AppointmentService {
         appointment.setEndTime(requestDto.getEndTime());
         appointment.setLocationId(requestDto.getLocationId());
         appointment.setAppointmentStatus(Appointment.AppointmentStatus.PLANNED); // 기본값
+        appointment.setFeedback("F"); // 기본값: 피드백 미완료
         
         return appointment;
     }
@@ -387,7 +393,77 @@ public class AppointmentService {
         responseDto.setEndTime(appointment.getEndTime());
         responseDto.setLocationId(appointment.getLocationId());
         responseDto.setAppointmentStatus(appointment.getAppointmentStatus());
+        responseDto.setFeedback(appointment.getFeedback()); // 피드백 상태 추가
         
         return responseDto;
+    }
+    
+    /**
+     * 약속 상태 및 피드백 정보 조회 (프론트 요청용)
+     * 조건: appointmentStatus = DONE AND feedback = F
+     */
+    @Transactional(readOnly = true)
+    public AppointmentStatusFeedbackDto getAppointmentStatusFeedback(String appointmentId) {
+        log.info("Retrieving appointment status and feedback for ID: {}", appointmentId);
+        
+        Optional<Appointment> appointmentOpt = appointmentRepository.findById(appointmentId);
+        if (appointmentOpt.isEmpty()) {
+            log.warn("Appointment not found with ID: {}", appointmentId);
+            return null;
+        }
+        
+        Appointment appointment = appointmentOpt.get();
+        
+        // 조건 확인: DONE 상태이고 피드백이 F인 경우만 응답
+        if (appointment.getAppointmentStatus() != Appointment.AppointmentStatus.DONE || 
+            !"F".equals(appointment.getFeedback())) {
+            log.info("Appointment does not meet criteria - status: {}, feedback: {}", 
+                    appointment.getAppointmentStatus(), appointment.getFeedback());
+            return null;
+        }
+        
+        // Guest 정보 조회
+        List<GuestInfo> guests = getGuestInfoForAppointment(appointmentId);
+        
+        // 응답 DTO 생성
+        AppointmentStatusFeedbackDto statusFeedbackDto = new AppointmentStatusFeedbackDto();
+        statusFeedbackDto.setAppointmentStatus(appointment.getAppointmentStatus());
+        statusFeedbackDto.setFeedback(appointment.getFeedback());
+        statusFeedbackDto.setGuests(guests);
+        
+        log.info("Successfully retrieved status and feedback for appointment: {} with {} guests", 
+                appointmentId, guests.size());
+        return statusFeedbackDto;
+    }
+    
+    /**
+     * 약속 ID로 Guest 정보 조회
+     */
+    private List<GuestInfo> getGuestInfoForAppointment(String appointmentId) {
+        try {
+            // Guest 서비스에서 Guest 목록 조회
+            List<GuestResponse> guestResponses = guestServiceClient.getGuestsByAppointmentId(appointmentId);
+            
+            // GuestResponse를 GuestInfo로 변환
+            return guestResponses.stream()
+                    .map(this::convertToGuestInfo)
+                    .collect(Collectors.toList());
+                    
+        } catch (Exception e) {
+            log.error("Failed to retrieve guest information for appointment: {}", appointmentId, e);
+            return List.of(); // 빈 리스트 반환
+        }
+    }
+    
+    /**
+     * GuestResponse를 GuestInfo로 변환
+     */
+    private GuestInfo convertToGuestInfo(GuestResponse guestResponse) {
+        GuestInfo guestInfo = new GuestInfo();
+        guestInfo.setGuestId(guestResponse.getGuestId());
+        guestInfo.setUserId(guestResponse.getUserId());
+        guestInfo.setUsername(guestResponse.getUsername());
+        guestInfo.setNickname(guestResponse.getNickname());
+        return guestInfo;
     }
 }

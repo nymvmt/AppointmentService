@@ -360,4 +360,55 @@ public class AppointmentController {
                 .body(new ErrorResponse("InternalError", "Failed to delete appointment"));
         }
     }
+    
+    /**
+     * 약속 상태 및 피드백 정보 조회 (프론트 요청용)
+     * 조건: appointmentStatus = DONE AND feedback = F
+     * GET /appointments/{appointmentId}/status-feedback
+     */
+    @GetMapping("/{appointmentId}/status-feedback")
+    public ResponseEntity<?> getAppointmentStatusFeedback(@PathVariable String appointmentId) {
+        try {
+            log.info("Processing status-feedback request for appointment: {}", appointmentId);
+            
+            // 1. 입력 검증
+            if (appointmentId == null || appointmentId.trim().isEmpty()) {
+                log.warn("Invalid appointment ID provided: {}", appointmentId);
+                return ResponseEntity.badRequest()
+                    .body(new ErrorResponse("InvalidRequest", "Appointment ID cannot be null or empty"));
+            }
+            
+            // 2. 약속 존재 여부 확인
+            if (!appointmentExists(appointmentId)) {
+                log.warn("Appointment not found with ID: {}", appointmentId);
+                return ResponseEntity.notFound().build();
+            }
+            
+            // 3. 조건부 데이터 조회
+            AppointmentStatusFeedbackDto statusFeedback = appointmentService.getAppointmentStatusFeedback(appointmentId);
+            
+            // 4. 응답 처리
+            if (statusFeedback == null) {
+                log.info("Appointment {} does not meet feedback criteria (DONE status with F feedback)", appointmentId);
+                return ResponseEntity.status(HttpStatus.NO_CONTENT)
+                    .body(new ErrorResponse("NoContent", "Appointment does not meet feedback criteria"));
+            }
+            
+            log.info("Successfully retrieved status and feedback for appointment: {} with {} guests", 
+                    appointmentId, statusFeedback.getGuests().size());
+            return ResponseEntity.ok(statusFeedback);
+            
+        } catch (Exception e) {
+            log.error("Error retrieving appointment status and feedback for ID: {}", appointmentId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ErrorResponse("InternalError", "Failed to retrieve appointment status and feedback"));
+        }
+    }
+    
+    /**
+     * 약속 존재 여부 확인
+     */
+    private boolean appointmentExists(String appointmentId) {
+        return appointmentService.getAppointmentById(appointmentId) != null;
+    }
 }

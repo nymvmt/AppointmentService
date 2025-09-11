@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
            @Index(name = "idx_start_time", columnList = "start_time"),
            @Index(name = "idx_end_time", columnList = "end_time"),
            @Index(name = "idx_appointment_status", columnList = "appointment_status"),
+           @Index(name = "idx_feedback", columnList = "feedback"),
            @Index(name = "idx_host_time", columnList = "host_id, start_time, end_time")
        })
 @Data
@@ -51,6 +52,9 @@ public class Appointment {
     @Column(name = "appointment_status", length = 20, nullable = false, columnDefinition = "VARCHAR(20) DEFAULT 'PLANNED'")
     private AppointmentStatus appointmentStatus;
     
+    @Column(name = "feedback", length = 1, nullable = false, columnDefinition = "CHAR(1) DEFAULT 'F'")
+    private String feedback;
+    
     
     /**
      * 약속 상태 열거형
@@ -69,6 +73,9 @@ public class Appointment {
     protected void onCreate() {
         if (appointmentStatus == null) {
             appointmentStatus = AppointmentStatus.PLANNED;
+        }
+        if (feedback == null) {
+            feedback = "F"; // 기본값: 피드백 미완료
         }
     }
 }

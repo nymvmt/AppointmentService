@@ -33,3 +33,6 @@ services:
   user:
     url: ${USER_SERVICE_URL}
     api-key: ${USER_SERVICE_API_KEY}
+  guest:
+    url: ${GUEST_SERVICE_URL}
+    api-key: ${GUEST_SERVICE_API_KEY}

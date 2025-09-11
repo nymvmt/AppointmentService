@@ -25,4 +25,5 @@ public class AppointmentResponseDto {
     private LocalDateTime endTime;
     private String locationId;
     private Appointment.AppointmentStatus appointmentStatus;
+    private String feedback; // 피드백 상태 (F: 미완료, T: 완료)
 }
