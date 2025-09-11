@@ -29,20 +29,24 @@ public class AppointmentStatusScheduler {
     @Scheduled(fixedRate = 60000) // 60초(1분)마다 실행
     @Transactional
     public void updateAppointmentStatuses() {
-        LocalDateTime now = LocalDateTime.now();
-        
-        log.debug("실시간 약속 상태 체크 시작: {}", now);
-        
-        // 1. PLANNED → ONGOING 변경
-        updatePlannedToOngoing(now);
-        
-        // 2. ONGOING → DONE 변경  
-        updateOngoingToDone(now);
-        
-        // 3. PLANNED에서 바로 DONE으로 변경 (늦게 확인된 경우)
-        updatePlannedToDone(now);
-        
-        log.debug("실시간 약속 상태 체크 완료");
+        try {
+            LocalDateTime now = LocalDateTime.now();
+            
+            log.debug("실시간 약속 상태 체크 시작: {}", now);
+            
+            // 1. PLANNED → ONGOING 변경
+            updatePlannedToOngoing(now);
+            
+            // 2. ONGOING → DONE 변경  
+            updateOngoingToDone(now);
+            
+            // 3. PLANNED에서 바로 DONE으로 변경 (늦게 확인된 경우)
+            updatePlannedToDone(now);
+            
+            log.debug("실시간 약속 상태 체크 완료");
+        } catch (Exception e) {
+            log.error("약속 상태 업데이트 중 오류 발생", e);
+        }
     }
     
     /**
@@ -52,17 +56,19 @@ public class AppointmentStatusScheduler {
     private void updatePlannedToOngoing(LocalDateTime now) {
         List<Appointment> appointmentsToStart = appointmentRepository.findAppointmentsToStartNow(now);
         
-        for (Appointment appointment : appointmentsToStart) {
-            appointment.setAppointmentStatus(Appointment.AppointmentStatus.ONGOING);
-            appointmentRepository.save(appointment);
-            
-            log.info("실시간 상태 변경: {} - PLANNED → ONGOING (시작: {})", 
-                    appointment.getAppointmentId(), 
-                    appointment.getStartTime());
-        }
-        
         if (!appointmentsToStart.isEmpty()) {
-            log.info("PLANNED → ONGOING 변경 완료: {}개 약속", appointmentsToStart.size());
+            // 배치 업데이트: 메모리에서 상태 변경 후 한 번에 저장
+            appointmentsToStart.forEach(appointment -> 
+                appointment.setAppointmentStatus(Appointment.AppointmentStatus.ONGOING));
+            appointmentRepository.saveAll(appointmentsToStart);
+            
+            // 로깅
+            appointmentsToStart.forEach(appointment -> 
+                log.info("실시간 상태 변경: {} - PLANNED → ONGOING (시작: {})", 
+                        appointment.getAppointmentId(), 
+                        appointment.getStartTime()));
+            
+            log.info("PLANNED → ONGOING 배치 변경 완료: {}개 약속", appointmentsToStart.size());
         }
     }
     
@@ -73,17 +79,19 @@ public class AppointmentStatusScheduler {
     private void updateOngoingToDone(LocalDateTime now) {
         List<Appointment> appointmentsToEnd = appointmentRepository.findAppointmentsToEndNow(now);
         
-        for (Appointment appointment : appointmentsToEnd) {
-            appointment.setAppointmentStatus(Appointment.AppointmentStatus.DONE);
-            appointmentRepository.save(appointment);
-            
-            log.info("실시간 상태 변경: {} - ONGOING → DONE (종료: {})", 
-                    appointment.getAppointmentId(), 
-                    appointment.getEndTime());
-        }
-        
         if (!appointmentsToEnd.isEmpty()) {
-            log.info("ONGOING → DONE 변경 완료: {}개 약속", appointmentsToEnd.size());
+            // 배치 업데이트: 메모리에서 상태 변경 후 한 번에 저장
+            appointmentsToEnd.forEach(appointment -> 
+                appointment.setAppointmentStatus(Appointment.AppointmentStatus.DONE));
+            appointmentRepository.saveAll(appointmentsToEnd);
+            
+            // 로깅
+            appointmentsToEnd.forEach(appointment -> 
+                log.info("실시간 상태 변경: {} - ONGOING → DONE (종료: {})", 
+                        appointment.getAppointmentId(), 
+                        appointment.getEndTime()));
+            
+            log.info("ONGOING → DONE 배치 변경 완료: {}개 약속", appointmentsToEnd.size());
         }
     }
     
@@ -94,17 +102,19 @@ public class AppointmentStatusScheduler {
     private void updatePlannedToDone(LocalDateTime now) {
         List<Appointment> plannedPastEndTime = appointmentRepository.findPlannedAppointmentsPastEndTime(now);
         
-        for (Appointment appointment : plannedPastEndTime) {
-            appointment.setAppointmentStatus(Appointment.AppointmentStatus.DONE);
-            appointmentRepository.save(appointment);
-            
-            log.info("실시간 상태 변경: {} - PLANNED → DONE (종료시간 지남: {})", 
-                    appointment.getAppointmentId(), 
-                    appointment.getEndTime());
-        }
-        
         if (!plannedPastEndTime.isEmpty()) {
-            log.info("PLANNED → DONE 변경 완료: {}개 약속 (늦은 처리)", plannedPastEndTime.size());
+            // 배치 업데이트: 메모리에서 상태 변경 후 한 번에 저장
+            plannedPastEndTime.forEach(appointment -> 
+                appointment.setAppointmentStatus(Appointment.AppointmentStatus.DONE));
+            appointmentRepository.saveAll(plannedPastEndTime);
+            
+            // 로깅
+            plannedPastEndTime.forEach(appointment -> 
+                log.info("실시간 상태 변경: {} - PLANNED → DONE (종료시간 지남: {})", 
+                        appointment.getAppointmentId(), 
+                        appointment.getEndTime()));
+            
+            log.info("PLANNED → DONE 배치 변경 완료: {}개 약속 (늦은 처리)", plannedPastEndTime.size());
         }
     }
     

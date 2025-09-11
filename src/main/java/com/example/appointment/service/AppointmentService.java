@@ -87,8 +87,8 @@ public class AppointmentService {
         
         List<Appointment> appointments = appointmentRepository.findByHostId(hostId);
         
-        // 상태 자동 업데이트
-        updateAppointmentStatuses(appointments);
+        // 실시간 스케줄러가 처리하므로 lazy update 제거
+        // updateAppointmentStatuses(appointments);
         
         return appointments.stream()
                 .map(this::convertToResponseDto)
@@ -101,8 +101,8 @@ public class AppointmentService {
         
         List<Appointment> appointments = appointmentRepository.findByLocationId(locationId);
         
-        // 상태 자동 업데이트
-        updateAppointmentStatuses(appointments);
+        // 실시간 스케줄러가 처리하므로 lazy update 제거
+        // updateAppointmentStatuses(appointments);
         
         return appointments.stream()
                 .map(this::convertToResponseDto)
@@ -115,8 +115,8 @@ public class AppointmentService {
         
         List<Appointment> appointments = appointmentRepository.findByStartTime(startTime);
         
-        // 상태 자동 업데이트
-        updateAppointmentStatuses(appointments);
+        // 실시간 스케줄러가 처리하므로 lazy update 제거
+        // updateAppointmentStatuses(appointments);
         
         return appointments.stream()
                 .map(this::convertToResponseDto)
@@ -129,8 +129,8 @@ public class AppointmentService {
         
         List<Appointment> appointments = appointmentRepository.findByEndTime(endTime);
         
-        // 상태 자동 업데이트
-        updateAppointmentStatuses(appointments);
+        // 실시간 스케줄러가 처리하므로 lazy update 제거
+        // updateAppointmentStatuses(appointments);
         
         return appointments.stream()
                 .map(this::convertToResponseDto)
@@ -191,8 +191,8 @@ public class AppointmentService {
         List<Appointment> appointments = appointmentRepository.findAppointmentsWithFilters(
                 locationId, appointmentStatus, startTime, endTime);
         
-        // 상태 자동 업데이트
-        updateAppointmentStatuses(appointments);
+        // 실시간 스케줄러가 처리하므로 lazy update 제거
+        // updateAppointmentStatuses(appointments);
         
         return appointments.stream()
                 .map(this::convertToResponseDto)
@@ -232,8 +232,6 @@ public class AppointmentService {
      * 약속 불변식 검증
      */
     private void validateAppointmentInvariants(AppointmentRequestDto requestDto) {
-        LocalDateTime now = LocalDateTime.now();
-        
         // INV-A001: start_time < end_time
         if (!requestDto.getStartTime().isBefore(requestDto.getEndTime())) {
             throw new IllegalArgumentException("Start time must be before end time (INV-A001)");
@@ -241,6 +239,7 @@ public class AppointmentService {
         
         // INV-A002: start_time >= CURRENT_TIMESTAMP (개발/테스트용으로 일시적으로 비활성화)
         // TODO: 운영 환경에서는 활성화 필요
+        // LocalDateTime now = LocalDateTime.now();
         // if (requestDto.getStartTime().isBefore(now)) {
         //     throw new IllegalArgumentException("Start time must be in the future (INV-A002)");
         // }
@@ -306,7 +305,9 @@ public class AppointmentService {
     
     /**
      * 시간 기반 상태 자동 업데이트 (INV-A006)
+     * 스케줄러가 실시간으로 처리하므로 주석 처리
      */
+    /*
     private void updateAppointmentStatus(Appointment appointment) {
         LocalDateTime now = LocalDateTime.now();
         Appointment.AppointmentStatus currentStatus = appointment.getAppointmentStatus();
@@ -329,13 +330,17 @@ public class AppointmentService {
             log.info("Auto-updated appointment {} status to ONGOING", appointment.getAppointmentId());
         }
     }
+    */
     
     /**
      * 여러 약속의 상태 자동 업데이트
+     * 스케줄러가 실시간으로 처리하므로 주석 처리
      */
+    /*
     private void updateAppointmentStatuses(List<Appointment> appointments) {
         appointments.forEach(this::updateAppointmentStatus);
     }
+    */
     
     /**
      * Appointment Entity 생성
