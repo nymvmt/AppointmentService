@@ -42,7 +42,8 @@ public class GuestServiceClient {
         try {
             ApiResponse<List<GuestResponse>> apiResponse = webClient
                     .get()
-                    .uri("/guests/appointment/{appointmentId}", appointmentId)
+                    // .uri("/guests/appointment/{appointmentId}", appointmentId)
+                    .uri("/appointments/{appointmentId}/guests", appointmentId)
                     .retrieve()
                     .bodyToMono(new ParameterizedTypeReference<ApiResponse<List<GuestResponse>>>() {})
                     .block();
