@@ -19,6 +19,8 @@ public interface AppointmentRepository extends JpaRepository<Appointment, String
     // 호스트별 약속 목록 조회
     List<Appointment> findByHostId(String hostId);
     
+    List<Appointment> findByAppointmentIdIn(List<String> appointmentIds);
+    
     // 위치별 약속 목록 조회
     List<Appointment> findByLocationId(String locationId);
     

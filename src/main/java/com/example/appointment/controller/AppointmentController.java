@@ -148,6 +148,28 @@ public class AppointmentController {
     }
     
     /**
+     * 사용자가 참여중인 약속 목록 조회
+     * GET /appointments/participating/{user_id}
+     */
+    @GetMapping("/participating/{user_id}")
+    public ResponseEntity<?> getParticipatingAppointments(@PathVariable("user_id") String userId) {
+        try {
+            if (userId == null || userId.trim().isEmpty()) {
+                return ResponseEntity.badRequest()
+                    .body(new ErrorResponse("InvalidRequest", "User ID cannot be null or empty"));
+            }
+            
+            List<AppointmentResponseDto> appointments = appointmentService.getParticipatingAppointments(userId);
+            return ResponseEntity.ok(appointments);
+            
+        } catch (Exception e) {
+            log.error("Error retrieving participating appointments for user: {}", userId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ErrorResponse("InternalError", "Failed to retrieve participating appointments"));
+        }
+    }
+    
+    /**
      * 위치별 약속 목록 조회
      * GET /appointments/location/{location_id}
      */

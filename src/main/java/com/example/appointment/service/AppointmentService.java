@@ -101,6 +101,29 @@ public class AppointmentService {
     }
     
     @Transactional(readOnly = true)
+    public List<AppointmentResponseDto> getParticipatingAppointments(String userId) {
+        log.info("Retrieving participating appointments for user: {}", userId);
+        
+        // Guest Service에서 해당 사용자의 "coming" 상태 게스트 목록 조회
+        List<GuestResponse> participatingGuests = guestServiceClient.getGuestsByUserIdAndStatus(userId, "coming");
+        
+        // 각 게스트의 appointment_id로 약속 정보 조회
+        List<String> appointmentIds = participatingGuests.stream()
+                .map(GuestResponse::getAppointmentId)
+                .collect(Collectors.toList());
+        
+        if (appointmentIds.isEmpty()) {
+            return List.of();
+        }
+        
+        List<Appointment> appointments = appointmentRepository.findByAppointmentIdIn(appointmentIds);
+        
+        return appointments.stream()
+                .map(this::convertToResponseDto)
+                .collect(Collectors.toList());
+    }
+    
+    @Transactional(readOnly = true)
     public List<AppointmentResponseDto> getAppointmentsByLocationId(String locationId) {
         log.info("Retrieving appointments for location: {}", locationId);
         

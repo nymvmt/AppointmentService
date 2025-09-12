@@ -60,4 +60,66 @@ public class GuestServiceClient {
             return List.of(); // 빈 리스트 반환
         }
     }
+    
+    /**
+     * 사용자 ID로 Guest 목록 조회
+     */
+    public List<GuestResponse> getGuestsByUserId(String userId) {
+        log.info("GuestService에서 사용자별 Guest 정보 조회 시작 - userId: {}", userId);
+        
+        WebClient webClient = webClientBuilder
+                .baseUrl(guestServiceUrl)
+                .defaultHeader("X-API-Key", apiKey)
+                .defaultHeader("User-Agent", "appointment-service/1.0")
+                .build();
+        
+        try {
+            List<GuestResponse> guestResponses = webClient
+                    .get()
+                    .uri("/appointments/guests/user/{userId}", userId)
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<List<GuestResponse>>() {})
+                    .block();
+            
+            log.info("GuestService에서 사용자별 Guest 정보 조회 완료 - userId: {}, guestCount: {}", 
+                    userId, guestResponses != null ? guestResponses.size() : 0);
+            
+            return guestResponses != null ? guestResponses : List.of();
+            
+        } catch (Exception e) {
+            log.error("GuestService에서 사용자별 Guest 정보 조회 실패 - userId: {}", userId, e);
+            return List.of(); // 빈 리스트 반환
+        }
+    }
+    
+    /**
+     * 사용자 ID와 상태로 Guest 목록 조회
+     */
+    public List<GuestResponse> getGuestsByUserIdAndStatus(String userId, String status) {
+        log.info("GuestService에서 사용자별 상태별 Guest 정보 조회 시작 - userId: {}, status: {}", userId, status);
+        
+        WebClient webClient = webClientBuilder
+                .baseUrl(guestServiceUrl)
+                .defaultHeader("X-API-Key", apiKey)
+                .defaultHeader("User-Agent", "appointment-service/1.0")
+                .build();
+        
+        try {
+            List<GuestResponse> guestResponses = webClient
+                    .get()
+                    .uri("/appointments/guests/user/{userId}/status/{status}", userId, status)
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<List<GuestResponse>>() {})
+                    .block();
+            
+            log.info("GuestService에서 사용자별 상태별 Guest 정보 조회 완료 - userId: {}, status: {}, guestCount: {}", 
+                    userId, status, guestResponses != null ? guestResponses.size() : 0);
+            
+            return guestResponses != null ? guestResponses : List.of();
+            
+        } catch (Exception e) {
+            log.error("GuestService에서 사용자별 상태별 Guest 정보 조회 실패 - userId: {}, status: {}", userId, status, e);
+            return List.of(); // 빈 리스트 반환
+        }
+    }
 }
