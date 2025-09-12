@@ -18,3 +18,4 @@ public class GuestResponse {
     private String username;
     private String nickname;
 }
+

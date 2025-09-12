@@ -17,3 +17,4 @@ public class GuestInfo {
     private String username;
     private String nickname;
 }
+
