@@ -22,7 +22,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
- * 약속 Service - 비즈니스 로직 및 불변식 처리
+ * 약속 Service - 비즈니스 로직 및 불변식 처리 함
  */
 @Service
 @RequiredArgsConstructor
